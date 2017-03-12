@@ -5,6 +5,7 @@ Task project for "Kyivstar GSM"
 * Spring Boot
 * Hibernate
 * MySQL
-* REST
+* RESTful Web Service
 * Gradle
 * Jackson
+* Swagger-UI

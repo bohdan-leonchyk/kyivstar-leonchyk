@@ -8,8 +8,7 @@ import org.springframework.data.jpa.convert.threeten.Jsr310JpaConverters;
 
 @EnableAutoConfiguration
 @SpringBootApplication
-@EntityScan(basePackageClasses = {Application.class, Jsr310JpaConverters.class}
-)
+@EntityScan(basePackageClasses = {Application.class, Jsr310JpaConverters.class})
 public class Application {
 
 	public static void main(String[] args) {
