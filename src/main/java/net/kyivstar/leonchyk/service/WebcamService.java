@@ -14,4 +14,7 @@ public interface WebcamService {
 
 	Webcam findByIdentifier(String identifier);
 	List<Webcam> findAllWebcams();
+	void saveWebcam(Webcam webcam);
+	void deleteWebcam(String identifier);
+
 }

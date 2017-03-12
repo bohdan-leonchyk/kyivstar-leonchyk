@@ -13,7 +13,7 @@ import java.util.List;
 public class Webcam {
 
 	@Id
-	@Column(nullable = false)
+	@Column(nullable = false, unique = true)
 	private String identifier;
 
 	private String location;

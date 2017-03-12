@@ -10,5 +10,7 @@ import java.util.List;
  * @date 11.03.2017
  */
 public interface WebcamRepository extends CrudRepository<Webcam, String> {
+
 	List<Webcam> findAll();
+
 }

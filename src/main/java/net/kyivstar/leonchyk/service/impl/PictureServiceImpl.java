@@ -31,4 +31,14 @@ public class PictureServiceImpl implements PictureService {
 	public List<Picture> findAllPictures() {
 		return pictureRepository.findAll();
 	}
+
+	@Override
+	public void savePicture(Picture picture) {
+		pictureRepository.save(picture);
+	}
+
+	@Override
+	public void deletePicture(Integer id) {
+		pictureRepository.delete(id);
+	}
 }

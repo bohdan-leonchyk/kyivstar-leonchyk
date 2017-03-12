@@ -14,4 +14,7 @@ public interface PictureService {
 
 	Picture findOnePicture(Integer id);
 	List<Picture> findAllPictures();
+	void savePicture(Picture picture);
+	void deletePicture(Integer id);
+
 }

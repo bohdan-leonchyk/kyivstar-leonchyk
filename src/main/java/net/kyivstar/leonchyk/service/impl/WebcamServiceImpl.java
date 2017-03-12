@@ -31,4 +31,14 @@ public class WebcamServiceImpl implements WebcamService {
 	public List<Webcam> findAllWebcams() {
 		return webcamRepository.findAll();
 	}
+
+	@Override
+	public void saveWebcam(Webcam webcam) {
+		webcamRepository.save(webcam);
+	}
+
+	@Override
+	public void deleteWebcam(String identifier) {
+		webcamRepository.delete(identifier);
+	}
 }
