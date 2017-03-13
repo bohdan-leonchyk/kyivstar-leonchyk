@@ -20,7 +20,7 @@ import java.util.List;
  * @date 11.03.2017
  */
 @RestController
-@RequestMapping(value = "/picture")
+@RequestMapping(value = "/pictures")
 public class PictureController {
 
 	private final PictureService pictureService;
@@ -33,6 +33,17 @@ public class PictureController {
 		this.webcamService = webcamService;
 	}
 
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<List<?>> getAllPictures() {
+
+		List<Picture> pictures = pictureService.findAllPictures();
+
+		if (pictures != null)
+			return ResponseEntity.ok().body(pictures);
+
+		return ResponseEntity.badRequest().body(pictures);
+	}
+
 	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
 	public ResponseEntity<?> getOnePicture(@PathVariable @NumberFormat Integer id) {
 
@@ -42,17 +53,6 @@ public class PictureController {
 			return ResponseEntity.ok().body(picture);
 
 		return ResponseEntity.badRequest().body("There is no picture with this id.");
-	}
-
-	@RequestMapping(value = "/all", method = RequestMethod.GET)
-	public ResponseEntity<List<?>> getAllPictures() {
-
-		List<Picture> pictures = pictureService.findAllPictures();
-
-		if (pictures != null)
-			return ResponseEntity.ok().body(pictures);
-
-		return ResponseEntity.badRequest().body(pictures);
 	}
 
 	@RequestMapping(value = "/{identifier}", method = RequestMethod.POST)

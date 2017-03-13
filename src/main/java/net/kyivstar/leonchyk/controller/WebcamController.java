@@ -5,10 +5,7 @@ import net.kyivstar.leonchyk.service.WebcamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -17,7 +14,7 @@ import java.util.List;
  * @date 11.03.2017
  */
 @RestController
-@RequestMapping(value = "/webcam")
+@RequestMapping(value = "/webcams")
 public class WebcamController {
 
 	private final WebcamService webcamService;
@@ -25,6 +22,17 @@ public class WebcamController {
 	@Autowired
 	public WebcamController(WebcamService webcamService) {
 		this.webcamService = webcamService;
+	}
+
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<List<?>> getAllWebcams() {
+
+		List<Webcam> webcams = webcamService.findAllWebcams();
+
+		if (webcams != null)
+			return ResponseEntity.ok().body(webcams);
+
+		return ResponseEntity.badRequest().body(webcams);
 	}
 
 	@RequestMapping(value = "/{identifier}", method = RequestMethod.GET)
@@ -38,47 +46,31 @@ public class WebcamController {
 		return ResponseEntity.badRequest().body("No webcams with this identifier.");
 	}
 
-	@RequestMapping(value = "/all", method = RequestMethod.GET)
-	public ResponseEntity<List<?>> getAllWebcams() {
-
-		List<Webcam> webcams = webcamService.findAllWebcams();
-
-		if (webcams != null)
-			return ResponseEntity.ok().body(webcams);
-
-		return ResponseEntity.badRequest().body(webcams);
-	}
-
 	@RequestMapping(value = "/{identifier}", method = RequestMethod.POST)
-	public ResponseEntity<?> saveWebcam(
-			@PathVariable String identifier) {
+	public ResponseEntity<?> saveWebcam(@PathVariable String identifier) {
 
-			Webcam webcam = new Webcam();
-			webcam.setIdentifier(identifier);
+		Webcam webcam = new Webcam();
+		webcam.setIdentifier(identifier);
 
-			if (webcamService.findByIdentifier(identifier) == null) {
-				webcamService.saveWebcam(webcam);
-				return ResponseEntity.ok().body("Webcam with identifier  " + identifier + " succesfully saved.");
-			}
+		if (webcamService.findByIdentifier(identifier) == null) {
+			webcamService.saveWebcam(webcam);
+			return ResponseEntity.ok().body("Webcam with identifier  " + identifier + " succesfully saved.");
+		}
 
-			return ResponseEntity.status(HttpStatus.CONFLICT).body("Webcam with identifier " + identifier
-					+ " already exists!");
+		return ResponseEntity.status(HttpStatus.CONFLICT).body("Webcam with identifier " + identifier
+				+ " already exists!");
 	}
 
 	@RequestMapping(value = "/{identifier}/{location}", method = RequestMethod.POST)
-	public ResponseEntity<?> saveWebcam(@PathVariable String identifier, @PathVariable String location) {
+	public ResponseEntity<?> saveWebcam(@RequestBody Webcam webcam) {
 
-			Webcam webcam = new Webcam();
-			webcam.setIdentifier(identifier);
-			webcam.setLocation(location);
+		if (webcamService.findByIdentifier(webcam.getIdentifier()) == null) {
+			webcamService.saveWebcam(webcam);
+			return ResponseEntity.ok().body("Webcam with identifier  " + webcam.getIdentifier() + " succesfully saved.");
+		}
 
-			if (webcamService.findByIdentifier(identifier) == null) {
-				webcamService.saveWebcam(webcam);
-				return ResponseEntity.ok().body("Webcam with identifier  " + identifier + " succesfully saved.");
-			}
-
-			return ResponseEntity.status(HttpStatus.CONFLICT).body("Webcam with identifier " + identifier
-				+ " already exists!");
+		return ResponseEntity.status(HttpStatus.CONFLICT).body("Webcam with identifier " + webcam.getIdentifier()
+			+ " already exists!");
 	}
 
 	@RequestMapping(value = "/{identifier}", method = RequestMethod.DELETE)

@@ -31,3 +31,5 @@ nbdist/
 /gradlew.bat
 /src/test/
 src/main/resources/templates/
+/src/main/resources/static/fonts/roboto/
+/src/main/resources/static/fonts/
