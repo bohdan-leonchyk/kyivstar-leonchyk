@@ -1,19 +1,17 @@
 package net.kyivstar.leonchyk.controller;
 
+import net.kyivstar.leonchyk.entity.Picture;
 import net.kyivstar.leonchyk.entity.Webcam;
 import net.kyivstar.leonchyk.service.PictureService;
 import net.kyivstar.leonchyk.service.WebcamService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 /**
  * @author Bohdan Leonchyk
@@ -23,48 +21,70 @@ import java.net.URISyntaxException;
 @RequestMapping(value = "/pictures")
 public class PictureController {
 
-	private static final String FILENAME = "{filename:.+}";
-
 	private final PictureService pictureService;
 	private final WebcamService webcamService;
 
 	@Autowired
 	public PictureController(PictureService pictureService, WebcamService webcamService) {
-
 		this.pictureService = pictureService;
 		this.webcamService = webcamService;
 	}
 
 	/**
-	 * Show file picture
+	 * Get list of all pictures for current webcam
 	 *
 	 * @param fk_identifier webcam indetifier (foreign key for picture)
-	 * @param picName picture filename
-	 * @return
+	 * @return list of pictures for current webcam
 	 */
-	@RequestMapping(value = "/{fk_identifier}/{picture_name}", method = RequestMethod.GET)
-	public ResponseEntity<?> getLastAddedPicture(
-			@PathVariable String fk_identifier,
-			@PathVariable String picName) {
+	@RequestMapping(value = "/{fk_identifier}", method = RequestMethod.GET)
+	public ResponseEntity<?> getAllPicturesForCurrentWebcam(@PathVariable String fk_identifier) {
 
 		Webcam webcam = webcamService.findByIdentifier(fk_identifier);
 
 		if (webcam != null) {
+			List<Picture> pictures = pictureService.findByWebcam(webcam);
 
-			try {
-				Resource file = pictureService.findOneFilePicture(picName);
+			if (pictures != null)
+				return ResponseEntity.ok().body(pictures);
 
-				return ResponseEntity.ok()
-						.contentLength(file.contentLength())
-						.contentType(MediaType.IMAGE_JPEG)
-						.body(new InputStreamResource(file.getInputStream()));
-
-			} catch (IOException ex) {
-				return ResponseEntity.badRequest().body("Could not find " + picName + " => " + ex.getMessage());
-			}
+			return ResponseEntity.badRequest().body("There is no any picture.");
 		}
 
-		return ResponseEntity.badRequest().body("There is no webcam identifier: " + fk_identifier);
+		return ResponseEntity.badRequest().body("There is no webcam: " + fk_identifier);
+	}
+
+	/**
+	 * Send to client file Base64 encoded.
+	 *
+	 * @param fk_identifier webcam indetifier (foreign key for picture)
+	 * @param filename picture filename
+	 * @return picture Base64 encoded
+	 */
+	@RequestMapping(value = "/{fk_identifier}/{filename}/base64", method = RequestMethod.GET)
+	public ResponseEntity<?> getLastAddedPicture(
+			@PathVariable String fk_identifier,
+			@PathVariable String filename) {
+
+		Webcam webcam = webcamService.findByIdentifier(fk_identifier);
+
+		System.out.println(System.getProperty("user.dir"));
+
+		if (webcam != null) {
+			if (pictureService.findOnePicture(filename, webcam) != null) {
+
+				try {
+
+
+					return ResponseEntity.ok().body(pictureService.fileBase64Encode(filename));
+
+				} catch (IOException ex) {
+					return ResponseEntity.badRequest().body("Could not find " + filename + " => " + ex.getMessage());
+				}
+			}
+			return ResponseEntity.badRequest().body("There is no picture");
+		}
+
+		return ResponseEntity.badRequest().body("There is no webcam");
 	}
 
 	/**
@@ -95,28 +115,6 @@ public class PictureController {
 			return ResponseEntity.ok().body("File " + file.getOriginalFilename() + " succesfully uploaded");
 		} catch (IOException ex) {
 			return ResponseEntity.badRequest().body("Could not save file: " + ex.getMessage());
-		}
-	}
-
-	/**
-	 * Delete picture file
-	 * !!! in development (no database integration yet)
-	 *
-	 * @param filename
-	 * @return
-	 */
-	@RequestMapping(method = RequestMethod.DELETE, value = "/" + FILENAME)
-	public ResponseEntity<?> deleteFile(@PathVariable String filename) {
-
-		try {
-			pictureService.deleteFilePicture(filename);
-
-			return ResponseEntity.status(HttpStatus.NO_CONTENT)
-					.body("Successfully deleted " + filename);
-
-		} catch (IOException e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Failed to delete " + filename + " => " + e.getMessage());
 		}
 	}
 }

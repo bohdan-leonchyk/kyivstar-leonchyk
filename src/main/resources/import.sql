@@ -1,7 +1,9 @@
--- Webcam
-INSERT INTO webcam (identifier, location) VALUES ("webcam1", "KyivKhreschatykStreet");
-INSERT INTO webcam (identifier, location) VALUES ("webcam2", "KyivPeremohyAvenue");
-INSERT INTO webcam (identifier, location) VALUES ("webcam3", "KyivIndependeceSquare");
+##### Fill Tables ###
+#
+# -- Webcam
+# INSERT INTO webcam (identifier, location) VALUES ("webcam1", "KyivKhreschatykStreet");
+# INSERT INTO webcam (identifier, location) VALUES ("webcam2", "KyivPeremohyAvenue");
+# INSERT INTO webcam (identifier, location) VALUES ("webcam3", "KyivIndependeceSquare");
 
 # -- Picture 1
 # INSERT INTO picture (created_time, name, fk_identifier) VALUES (NOW(), "pic_name1", "webcam1");

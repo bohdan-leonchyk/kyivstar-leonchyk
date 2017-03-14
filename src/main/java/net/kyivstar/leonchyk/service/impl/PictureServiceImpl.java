@@ -5,14 +5,13 @@ import net.kyivstar.leonchyk.entity.Webcam;
 import net.kyivstar.leonchyk.repo.PicturePagingRepository;
 import net.kyivstar.leonchyk.repo.PictureRepository;
 import net.kyivstar.leonchyk.service.PictureService;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ResourceLoader;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,27 +29,30 @@ public class PictureServiceImpl implements PictureService {
 
 	private final PictureRepository pictureRepository;
 	private final PicturePagingRepository picturePagingRepository;
-	private final ResourceLoader resourceLoader;
 
 	@Autowired
 	public PictureServiceImpl(
 			PictureRepository pictureRepository,
-			PicturePagingRepository picturePagingRepository,
-			ResourceLoader resourceLoader) {
+			PicturePagingRepository picturePagingRepository) {
 
 		this.pictureRepository = pictureRepository;
 		this.picturePagingRepository = picturePagingRepository;
-		this.resourceLoader = resourceLoader;
 	}
 
 	@Override
-	public Picture findOnePicture(Integer id) {
-		return pictureRepository.findOne(id);
+	public String fileBase64Encode(String filename) throws IOException {
+		File picture = new File(System.getProperty("user.dir") + "/" + UPLOAD_ROOT + "/" + filename);
+		return new String(Base64.encodeBase64(FileUtils.readFileToByteArray(picture)), "UTF-8");
 	}
 
 	@Override
-	public List<Picture> findAllPictures() {
-		return pictureRepository.findAll();
+	public Picture findOnePicture(String name, Webcam webcam) {
+		return pictureRepository.findByNameAndWebcam(name, webcam);
+	}
+
+	@Override
+	public List<Picture> findByWebcam(Webcam webcam) {
+		return pictureRepository.findAllByWebcam(webcam);
 	}
 
 	@Override
@@ -59,40 +61,5 @@ public class PictureServiceImpl implements PictureService {
 		Path path = Paths.get(UPLOAD_ROOT + "/" + file.getOriginalFilename());
 		Files.write(path, bytes);
 		picturePagingRepository.save(new Picture(file.getOriginalFilename(), webcam));
-	}
-
-	@Override
-	public void deletePicture(Integer id) {
-		pictureRepository.delete(id);
-	}
-
-	@Override
-	public void createFilePicture(MultipartFile file, Webcam webcam) throws IOException {
-		if (!file.isEmpty()) {
-			Files.copy(file.getInputStream(), Paths.get(UPLOAD_ROOT, file.getOriginalFilename()));
-			picturePagingRepository.save(new Picture(file.getOriginalFilename(), webcam));
-		}
-	}
-
-	@Override
-	public void deleteFilePicture(String filename) throws IOException {
-		final Picture byName = picturePagingRepository.findByName(filename);
-		picturePagingRepository.delete(byName);
-		Files.deleteIfExists(Paths.get(UPLOAD_ROOT, filename));
-	}
-
-	@Override
-	public Picture getLastAdded(Webcam webcam) {
-		return picturePagingRepository.findFirstByOrderByIdDesc(webcam);
-	}
-
-	@Override
-	public Page<Picture> findPage(Pageable pageable) {
-		return picturePagingRepository.findAll(pageable);
-	}
-
-	@Override
-	public Resource findOneFilePicture(String filename) {
-		return resourceLoader.getResource("file:" + UPLOAD_ROOT + "/" + filename);
 	}
 }

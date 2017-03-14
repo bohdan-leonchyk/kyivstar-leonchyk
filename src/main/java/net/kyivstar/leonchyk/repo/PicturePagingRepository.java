@@ -10,7 +10,4 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  */
 public interface PicturePagingRepository extends PagingAndSortingRepository<Picture, String> {
 
-	Picture findByName(String name);
-	Picture findFirstByOrderByIdDesc(Webcam webcam);
-
 }
