@@ -49,7 +49,6 @@ function refreshPictures() {
             if (data != null) {
 
                 $selectPictureDropdown = $("#select_picture").empty().html(' ');
-                $selectPictureDropdown.append($('<option>', {value:'default', text:'No pictures for this webcam'}));
 
                 $.each(data, function (key, val) {
                     $selectPictureDropdown.append($('<option>', {value:val.name, text:val.name}));
@@ -58,6 +57,7 @@ function refreshPictures() {
             } else {
                 $selectPictureDropdown = $("#select_picture").empty().html(' ');
                 $selectPictureDropdown.append($('<option>', {value:'default', text:'No pictures for this webcam'}));
+                $selectPictureDropdown.trigger('contentChanged');
             }
         }
     });
