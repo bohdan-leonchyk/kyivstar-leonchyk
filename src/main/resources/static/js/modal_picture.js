@@ -1,6 +1,5 @@
 $('select').material_select();
 var $selectDropdown = $("#select_webcam");
-$('.dropify').dropify();
 $('.modal').modal({
         dismissible: true, // Modal can be dismissed by clicking outside of the modal
         opacity: .5, // Opacity of modal background
@@ -25,27 +24,36 @@ $('.modal').modal({
                             $selectDropdown.append($('<option>', {value:val.identifier, text:val.identifier}));
                         });
                         $selectDropdown.trigger('contentChanged');
+
                     }
                 }
             });
         },
         complete: function () {
 
-        } // Callback for Modal close
+        }
     }
 );
 
 $('select').on('contentChanged', function() {
-    // re-initialize (update)
     $(this).material_select();
 });
 
-
-function savePictureButton() {
-    if ($selectDropdown.val() == 'default') {
-        $('#pic_status').text('Select webcam');
-    } else {
-        $('#pic_status').text('');
-        // ...
-    }
-}
+$('#myForm').submit(function(e) {
+    $.ajax({
+        url: '/pictures/'+$selectDropdown.val(),
+        type: 'POST',
+        data: new FormData(this),
+        processData: false,
+        contentType: false,
+        success: function () {
+            $('#pic_status').attr('class','green-text');
+            $('#pic_status').text($('#fileinput').val() + ' was succesfully saved.');
+        },
+        error: function () {
+            $('#pic_status').attr('class','red-text');
+            $('#pic_status').text('Could not save ' + $('#fileinput').val());
+        }
+    });
+    e.preventDefault();
+});

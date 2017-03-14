@@ -1,19 +1,19 @@
 package net.kyivstar.leonchyk.controller;
 
-import net.kyivstar.leonchyk.entity.Picture;
 import net.kyivstar.leonchyk.entity.Webcam;
 import net.kyivstar.leonchyk.service.PictureService;
 import net.kyivstar.leonchyk.service.WebcamService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.NumberFormat;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
 /**
  * @author Bohdan Leonchyk
@@ -22,6 +22,8 @@ import java.util.List;
 @RestController
 @RequestMapping(value = "/pictures")
 public class PictureController {
+
+	private static final String FILENAME = "{filename:.+}";
 
 	private final PictureService pictureService;
 	private final WebcamService webcamService;
@@ -33,77 +35,88 @@ public class PictureController {
 		this.webcamService = webcamService;
 	}
 
-	@RequestMapping(method = RequestMethod.GET)
-	public ResponseEntity<List<?>> getAllPictures() {
+	/**
+	 * Show file picture
+	 *
+	 * @param fk_identifier webcam indetifier (foreign key for picture)
+	 * @param picName picture filename
+	 * @return
+	 */
+	@RequestMapping(value = "/{fk_identifier}/{picture_name}", method = RequestMethod.GET)
+	public ResponseEntity<?> getLastAddedPicture(
+			@PathVariable String fk_identifier,
+			@PathVariable String picName) {
 
-		List<Picture> pictures = pictureService.findAllPictures();
+		Webcam webcam = webcamService.findByIdentifier(fk_identifier);
 
-		if (pictures != null)
-			return ResponseEntity.ok().body(pictures);
+		if (webcam != null) {
 
-		return ResponseEntity.badRequest().body(pictures);
-	}
+			try {
+				Resource file = pictureService.findOneFilePicture(picName);
 
-	@RequestMapping(value = "/{id}", method = RequestMethod.GET)
-	public ResponseEntity<?> getOnePicture(@PathVariable @NumberFormat Integer id) {
+				return ResponseEntity.ok()
+						.contentLength(file.contentLength())
+						.contentType(MediaType.IMAGE_JPEG)
+						.body(new InputStreamResource(file.getInputStream()));
 
-		Picture picture = pictureService.findOnePicture(id);
-
-		if (picture != null)
-			return ResponseEntity.ok().body(picture);
-
-		return ResponseEntity.badRequest().body("There is no picture with this id.");
-	}
-
-	@RequestMapping(value = "/{identifier}", method = RequestMethod.POST)
-	public ResponseEntity<?> savePicture(@PathVariable String identifier) {
-
-		Webcam webcam = webcamService.findByIdentifier(identifier);
-
-		if (webcam == null)
-			return ResponseEntity.badRequest().body("There is no webcam with identifier " + identifier);
-
-		Picture picture = new Picture();
-		picture.setCreatedTime(LocalDateTime.now());
-		picture.setWebcam(webcam);
-		pictureService.savePicture(picture);
-
-		return ResponseEntity.ok().body(picture);
-	}
-
-	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
-	public ResponseEntity<?> deletePicture(@PathVariable @NumberFormat Integer id) {
-
-		Picture picture = pictureService.findOnePicture(id);
-
-		if (picture != null) {
-			pictureService.deletePicture(id);
-			return ResponseEntity.ok().body(picture);
-		}
-
-		return ResponseEntity.badRequest().body("There is no picture with id: " + id);
-	}
-
-	@RequestMapping(value = "/{id}/{fk_identifier}", method = RequestMethod.PUT)
-	public ResponseEntity<?> editPictureWebcam(
-			@PathVariable @NumberFormat Integer id,
-	        @PathVariable String fk_identifier) {
-
-		Picture picture = pictureService.findOnePicture(id);
-
-		if (picture != null) {
-			Webcam webcam = webcamService.findByIdentifier(fk_identifier);
-
-			if (webcam != null) {
-				picture.setWebcam(webcam);
-				pictureService.savePicture(picture);
-
-				return ResponseEntity.ok().body(picture);
+			} catch (IOException ex) {
+				return ResponseEntity.badRequest().body("Could not find " + picName + " => " + ex.getMessage());
 			}
-
-			return ResponseEntity.badRequest().body("There is no camera with identifier: " + fk_identifier);
 		}
 
-		return ResponseEntity.badRequest().body("There is no picture with id: " + id);
+		return ResponseEntity.badRequest().body("There is no webcam identifier: " + fk_identifier);
+	}
+
+	/**
+	 * Upload picture from client to server into "AmazonServer" folder
+	 * and add information into database.
+	 *
+	 * @param fk_identifier webcam for picture
+	 * @param file picture file
+	 */
+	@RequestMapping(value = "/{fk_identifier}", method = RequestMethod.POST)
+	public ResponseEntity<?> createFile(
+			@PathVariable String fk_identifier,
+			@RequestParam("file") MultipartFile file) throws URISyntaxException {
+
+		if (file.isEmpty()) {
+			return ResponseEntity.badRequest().body("Choose file.");
+		}
+
+		Webcam webcam = webcamService.findByIdentifier(fk_identifier);
+
+		if (webcam == null) {
+			return ResponseEntity.badRequest().body("There is no webcam: " + fk_identifier);
+		}
+
+		try {
+			pictureService.savePicture(file, webcam);
+
+			return ResponseEntity.ok().body("File " + file.getOriginalFilename() + " succesfully uploaded");
+		} catch (IOException ex) {
+			return ResponseEntity.badRequest().body("Could not save file: " + ex.getMessage());
+		}
+	}
+
+	/**
+	 * Delete picture file
+	 * !!! in development (no database integration yet)
+	 *
+	 * @param filename
+	 * @return
+	 */
+	@RequestMapping(method = RequestMethod.DELETE, value = "/" + FILENAME)
+	public ResponseEntity<?> deleteFile(@PathVariable String filename) {
+
+		try {
+			pictureService.deleteFilePicture(filename);
+
+			return ResponseEntity.status(HttpStatus.NO_CONTENT)
+					.body("Successfully deleted " + filename);
+
+		} catch (IOException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("Failed to delete " + filename + " => " + e.getMessage());
+		}
 	}
 }

@@ -21,12 +21,21 @@ public class Picture {
 	@JsonFormat(pattern = "dd.MM.yyyy hh:mm:ss")
 	private LocalDateTime createdTime;
 
+	@Column(nullable = false, unique = true)
+	private String name;
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "fk_identifier")
 	@JsonIgnoreProperties(value = "pictures", allowSetters = true)
 	private Webcam webcam;
 
 	public Picture() {}
+
+	public Picture(String name, Webcam webcam) {
+		this.createdTime = LocalDateTime.now();
+		this.name = name;
+		this.webcam = webcam;
+	}
 
 	public Integer getId() {
 		return id;
@@ -42,6 +51,14 @@ public class Picture {
 
 	public void setCreatedTime(LocalDateTime createdTime) {
 		this.createdTime = createdTime;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Webcam getWebcam() {

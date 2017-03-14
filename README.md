@@ -13,4 +13,3 @@ Task project for "Kyivstar GSM"
 # <a name="tools"></a>Frontend technologies:
 * jQuery
 * Materialize
-* Dropify (file uploader)
