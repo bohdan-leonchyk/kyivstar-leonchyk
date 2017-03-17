@@ -9,6 +9,7 @@ Task project for "Kyivstar GSM"
 * Gradle
 * Jackson
 * Swagger-UI
+* jUnit
 
 # <a name="tools"></a>Frontend technologies:
 * jQuery
