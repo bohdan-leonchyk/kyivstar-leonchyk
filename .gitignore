@@ -33,3 +33,5 @@ nbdist/
 src/main/resources/templates/
 /src/main/resources/static/fonts/roboto/
 /src/main/resources/static/fonts/
+!/src/test/
+AmazonServer/

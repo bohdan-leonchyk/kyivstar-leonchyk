@@ -3,6 +3,7 @@ package net.kyivstar.leonchyk.entity;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -10,7 +11,9 @@ import java.time.LocalDateTime;
  * @date 11.03.2017
  */
 @Entity
-public class Picture {
+public class Picture implements Serializable {
+
+	private static final long serialVersionUID = 4973739802394038858L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -24,7 +27,7 @@ public class Picture {
 	@Column(nullable = false, unique = true)
 	private String name;
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne
 	@JoinColumn(name = "fk_identifier")
 	@JsonIgnoreProperties(value = "pictures", allowSetters = true)
 	private Webcam webcam;
@@ -67,5 +70,37 @@ public class Picture {
 
 	public void setWebcam(Webcam webcam) {
 		this.webcam = webcam;
+	}
+
+	@Override
+	public String toString() {
+		return "Picture{" +
+				"id=" + id +
+				", createdTime=" + createdTime +
+				", name='" + name + '\'' +
+				", webcam=" + webcam +
+				'}';
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		Picture picture = (Picture) o;
+
+		if (id != null ? !id.equals(picture.id) : picture.id != null) return false;
+		if (createdTime != null ? !createdTime.equals(picture.createdTime) : picture.createdTime != null) return false;
+		if (name != null ? !name.equals(picture.name) : picture.name != null) return false;
+		return webcam != null ? webcam.equals(picture.webcam) : picture.webcam == null;
+	}
+
+	@Override
+	public int hashCode() {
+		int result = id != null ? id.hashCode() : 0;
+		result = 31 * result + (createdTime != null ? createdTime.hashCode() : 0);
+		result = 31 * result + (name != null ? name.hashCode() : 0);
+		result = 31 * result + (webcam != null ? webcam.hashCode() : 0);
+		return result;
 	}
 }

@@ -18,6 +18,7 @@ public interface PictureService {
 	String fileBase64Encode(String filename) throws IOException;
 	Picture findOnePicture(String name, Webcam webcam);
 	List<Picture> findByWebcam(Webcam webcam);
+	List<Picture> findAll();
 	void savePicture(MultipartFile file, Webcam webcam) throws IOException;
 
 }

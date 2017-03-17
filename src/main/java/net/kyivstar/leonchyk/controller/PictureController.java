@@ -30,6 +30,11 @@ public class PictureController {
 		this.webcamService = webcamService;
 	}
 
+	@RequestMapping(method = RequestMethod.GET)
+	public ResponseEntity<?> getAllPictures() {
+		return ResponseEntity.ok().body(pictureService.findAll());
+	}
+
 	/**
 	 * Get list of all pictures for current webcam
 	 *

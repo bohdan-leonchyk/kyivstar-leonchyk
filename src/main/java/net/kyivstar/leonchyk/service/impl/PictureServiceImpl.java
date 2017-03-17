@@ -56,6 +56,11 @@ public class PictureServiceImpl implements PictureService {
 	}
 
 	@Override
+	public List<Picture> findAll() {
+		return pictureRepository.findAll();
+	}
+
+	@Override
 	public void savePicture(MultipartFile file, Webcam webcam) throws IOException {
 		byte[] bytes = file.getBytes();
 		Path path = Paths.get(UPLOAD_ROOT + "/" + file.getOriginalFilename());
