@@ -33,19 +33,19 @@ public class WebcamServiceTest {
 	public void init() {
 		if (isEmpty) {
 			Webcam webcam = new Webcam();
-			webcam.setIdentifier("webcam1");
+			webcam.setIdentifier("webcam111");
 			webcam.setLocation("Kyiv");
 
 			webcamList.add(webcam);
 
 			webcam = new Webcam();
-			webcam.setIdentifier("webcam2");
+			webcam.setIdentifier("webcam222");
 			webcam.setLocation("Lviv");
 
 			webcamList.add(webcam);
 
 			webcam = new Webcam();
-			webcam.setIdentifier("webcam3");
+			webcam.setIdentifier("webcam333");
 			webcam.setLocation("Dnipro");
 
 			webcamList.add(webcam);
@@ -60,13 +60,23 @@ public class WebcamServiceTest {
 	}
 
 	@Test
-	public void testGetOne() {
-		Webcam result = webcamService.findByIdentifier(webcamList.get(1).getIdentifier());
-		Assert.assertEquals("Incorrect identifier", webcamList.get(1), result);
+	@Sql(scripts = {"classpath:import-test.sql"})
+	public void testNotEmpty() {
+		Assert.assertNotEquals("Expected not empty", 0, webcamService.findAllWebcams().size());
 	}
 
 	@Test
-	@Sql(scripts = {"classpath:import-test.sql"})
+	public void testFixedSize() {
+		Assert.assertEquals("Wrong size", 3, webcamService.findAllWebcams().size());
+	}
+
+	@Test
+	public void testGetOne() {
+		Webcam result = webcamService.findByIdentifier(webcamList.get(0).getIdentifier());
+		Assert.assertEquals("Incorrect identifier", webcamList.get(0), result);
+	}
+
+	@Test
 	public void testAll() {
 		Assert.assertThat("Webcam is missed", webcamList, CoreMatchers.hasItems(webcamList.get(0)));
 		Assert.assertThat("Webcam is missed", webcamList, CoreMatchers.hasItems(webcamList.get(1)));
