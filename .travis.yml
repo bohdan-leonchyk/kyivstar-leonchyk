@@ -5,3 +5,7 @@ jdk:
 branches:
   only:
   - master
+services:
+  - mysql
+before_install:
+  - mysql -e 'CREATE DATABASE webcam;'
