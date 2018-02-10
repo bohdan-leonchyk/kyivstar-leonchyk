@@ -1,4 +1,4 @@
-sudo: false
+sudo: true
 language: java
 jdk:
   - oraclejdk8
@@ -8,4 +8,4 @@ branches:
 services:
   - mysql
 before_install:
-  - mysql -e 'CREATE DATABASE webcam;'
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS webcam;'
